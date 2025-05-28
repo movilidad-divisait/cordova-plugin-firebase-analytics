@@ -78,7 +78,7 @@
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void)getSessionId:(CDVInvokedUrlCommand *)command {
+/*- (void)getSessionId:(CDVInvokedUrlCommand *)command {
     NSString *sessionId = [FIRAnalytics sessionID];
 
     CDVPluginResult *pluginResult;
@@ -104,7 +104,7 @@
     }
 
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-}
+}*/
 
 
 - (void)setConsent:(CDVInvokedUrlCommand *)command {
@@ -112,16 +112,20 @@
     NSMutableDictionary<FIRConsentType, FIRConsentStatus> *consentMap = [NSMutableDictionary dictionary];
 
     // Define valid consent types and statuses
-    NSDictionary<NSString *, NSNumber *> *validConsentTypes = @{
-        @"ANALYTICS_STORAGE": @(FIRConsentTypeAnalyticsStorage),
-        @"AD_STORAGE": @(FIRConsentTypeAdStorage),
-        @"AD_USER_DATA": @(FIRConsentTypeAdUserData),
-        @"AD_PERSONALIZATION": @(FIRConsentTypeAdPersonalization)
+    /// @param consentSettings A Dictionary of consent types. Supported consent type keys are
+    ///   `ConsentType.adStorage`, `ConsentType.analyticsStorage`, `ConsentType.adUserData`, and
+    ///   `ConsentType.adPersonalization`. Valid values are `ConsentStatus.granted` and
+    ///   `ConsentStatus.denied`.
+    NSDictionary<NSString *, FIRConsentType> *validConsentTypes = @{
+        @"ANALYTICS_STORAGE": FIRConsentTypeAnalyticsStorage,
+        @"AD_STORAGE": FIRConsentTypeAdStorage,
+        @"AD_USER_DATA": FIRConsentTypeAdUserData,
+        @"AD_PERSONALIZATION": FIRConsentTypeAdPersonalization
     };
-
-    NSDictionary<NSString *, NSNumber *> *validConsentStatuses = @{
-        @"GRANTED": @(FIRConsentStatusGranted),
-        @"DENIED": @(FIRConsentStatusDenied)
+    
+    NSDictionary<NSString *, FIRConsentStatus> *validConsentStatuses = @{
+        @"GRANTED": FIRConsentStatusGranted,
+        @"DENIED": FIRConsentStatusDenied
     };
 
     for (NSString *key in consentSettings) {
@@ -138,11 +142,12 @@
             [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
             return;
         }
+       
+        FIRConsentType consentType = validConsentTypes[[key uppercaseString]];
+        
+        FIRConsentStatus consentStatus = validConsentStatuses[status];
 
-        FIRConsentType consentType = [validConsentTypes[[key uppercaseString]] integerValue];
-        FIRConsentStatus consentStatus = [validConsentStatuses[status] integerValue];
-
-        [consentMap setObject:@(consentStatus) forKey:@(consentType)];
+        [consentMap setValue:consentStatus forKey:consentType];
     }
 
     [FIRAnalytics setConsent:consentMap];
