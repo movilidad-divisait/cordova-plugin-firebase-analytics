@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.util.Log;
 import java.util.EnumMap;  // Add this line
 
-
 import by.chemerisuk.cordova.support.CordovaMethod;
 import by.chemerisuk.cordova.support.ReflectiveCordovaPlugin;
 
@@ -100,6 +99,7 @@ public class FirebaseAnalyticsPlugin extends ReflectiveCordovaPlugin {
 
     @CordovaMethod
     protected void getSessionId(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+        // Important: Accept Consent before get sessionId
         Task<Long> sessionIdTask = firebaseAnalytics.getSessionId();
         sessionIdTask.addOnSuccessListener(new OnSuccessListener<Long>() {
             @Override
@@ -120,6 +120,7 @@ public class FirebaseAnalyticsPlugin extends ReflectiveCordovaPlugin {
 
     @CordovaMethod
     protected void getAppInstanceId(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+        // Important: Accept Consent before get appInstanceId
         Task<String> appInstanceIdTask = firebaseAnalytics.getAppInstanceId();
         appInstanceIdTask.addOnSuccessListener(new OnSuccessListener<String>() {
             @Override
@@ -176,6 +177,7 @@ public class FirebaseAnalyticsPlugin extends ReflectiveCordovaPlugin {
         }
 
         firebaseAnalytics.setConsent(consentMap);
+        Log.d("Consent settings updated", consentMap.toString());
         callbackContext.success();
     }
 
