@@ -9,6 +9,7 @@ import by.chemerisuk.cordova.support.CordovaMethod;
 import by.chemerisuk.cordova.support.ReflectiveCordovaPlugin;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.installations.FirebaseInstallations;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaArgs;
@@ -138,7 +139,28 @@ public class FirebaseAnalyticsPlugin extends ReflectiveCordovaPlugin {
             }
         });        
     }
-    
+
+    @CordovaMethod
+    protected void getFirebaseInstallationsId(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+        // Important: Accept Consent before get FirebaseInstallationsId
+        Task<String> firebaseInstallationsIdTask = FirebaseInstallations.getInstance().getId();
+        firebaseInstallationsIdTask.addOnSuccessListener(new OnSuccessListener<String>() {
+            @Override
+            public void onSuccess(String firebaseInstallationsId) {
+                if (firebaseInstallationsId != null) {
+                    callbackContext.success(firebaseInstallationsId.toString());
+                } else {
+                    callbackContext.success("null");
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                callbackContext.error("Failed to retrieve Firebase Installations Id: " + e.getMessage());
+            }
+        });
+    }
+
     @CordovaMethod
     protected void setConsent(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
         JSONObject consentSettings = args.getJSONObject(0);

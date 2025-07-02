@@ -149,6 +149,21 @@ function() {
     });
 };
 
+exports.getFirebaseInstallationsId =
+/**
+ * Gets the Firebase Installations ID
+ *
+ * @returns {Promise<void>} Retrieves the Firebase Installations Id from the service, or null if ANALYTICS_STORAGE has been set to DENIED.
+ *
+ * @example
+ * cordova.plugins.firebase.analytics.getFirebaseInstallationsId();
+ */
+function() {
+    return new Promise(function(resolve, reject) {
+        exec(resolve, reject, PLUGIN_NAME, "getFirebaseInstallationsId", []);
+    });
+};
+
 exports.setAnalyticsCollectionEnabled =
 /**
  * Sets whether analytics collection is enabled for this app on this device. This setting is persisted across app sessions. By default it is enabled.
