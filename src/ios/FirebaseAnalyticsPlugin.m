@@ -2,6 +2,7 @@
 
 @import FirebaseCore;
 @import FirebaseAnalytics;
+@import FirebaseInstallations;
 
 @implementation FirebaseAnalyticsPlugin
 
@@ -78,22 +79,21 @@
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-/*- (void)getSessionId:(CDVInvokedUrlCommand *)command {
-    NSString *sessionId = [FIRAnalytics sessionID];
-
-    CDVPluginResult *pluginResult;
-    if (sessionId != nil) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:sessionId];
-    } else {
-        // Return null if session ID is not available
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:nil];
-    }
-
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+- (void)getSessionId:(CDVInvokedUrlCommand *)command {
+    [FIRAnalytics sessionIDWithCompletion:^(int64_t sessionID, NSError * _Nullable error) {
+        CDVPluginResult* pluginResult = nil;
+        if (!error) {
+            NSString *sessionIdString = [NSString stringWithFormat:@"%lld", sessionID];
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:sessionIdString];
+        } else {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:error.localizedDescription];
+        }
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
 }
 
 - (void)getAppInstanceId:(CDVInvokedUrlCommand *)command {
-    NSString *appInstanceId = [FIRAnalytics getAppInstanceId];
+    NSString *appInstanceId = [FIRAnalytics appInstanceID];
 
     CDVPluginResult *pluginResult;
     if (appInstanceId != nil) {
@@ -104,8 +104,21 @@
     }
 
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-}*/
+}
 
+- (void)getFirebaseInstallationsId:(CDVInvokedUrlCommand *)command {
+    // Get the Firebase Installation ID
+    [[FIRInstallations installations] installationIDWithCompletion:^(NSString * _Nullable installationID, NSError * _Nullable error) {
+        CDVPluginResult *pluginResult = nil;
+        if (installationID) {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:installationID];
+        } else {
+            NSString *errorMessage = error ? error.localizedDescription : @"Unknown error";
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errorMessage];
+        }
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
+}
 
 - (void)setConsent:(CDVInvokedUrlCommand *)command {
     NSDictionary *consentSettings = [command.arguments objectAtIndex:0];
@@ -122,7 +135,7 @@
         @"AD_USER_DATA": FIRConsentTypeAdUserData,
         @"AD_PERSONALIZATION": FIRConsentTypeAdPersonalization
     };
-    
+
     NSDictionary<NSString *, FIRConsentStatus> *validConsentStatuses = @{
         @"GRANTED": FIRConsentStatusGranted,
         @"DENIED": FIRConsentStatusDenied
@@ -142,9 +155,9 @@
             [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
             return;
         }
-       
+
         FIRConsentType consentType = validConsentTypes[[key uppercaseString]];
-        
+
         FIRConsentStatus consentStatus = validConsentStatuses[status];
 
         [consentMap setValue:consentStatus forKey:consentType];

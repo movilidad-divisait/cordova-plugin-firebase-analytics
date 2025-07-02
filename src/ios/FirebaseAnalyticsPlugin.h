@@ -11,5 +11,6 @@
 - (void)setDefaultEventParameters:(CDVInvokedUrlCommand*)command;
 - (void)getSessionId:(CDVInvokedUrlCommand*)command;
 - (void)getAppInstanceId:(CDVInvokedUrlCommand*)command;
+- (void)getFirebaseInstallationsId:(CDVInvokedUrlCommand*)command;
 - (void)setConsent:(CDVInvokedUrlCommand*)command;
 @end
